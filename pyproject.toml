@@ -1,0 +1,104 @@
+[project]
+name = "claude-to-agy"
+version = "1.0.0"
+description = "Claude-to-Antigravity MCP Bridge."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Rauls Kjarners", email = "rauls.kjarners@gmail.com" },
+]
+keywords = [
+    "mcp",
+    "mcp-server",
+    "claude",
+    "claude-code",
+    "claude-mcp",
+    "claude-skills",
+    "antigravity",
+    "antigravity-cli",
+    "gemini",
+    "delegation",
+    "delegate",
+    "acp",
+    "agent-client",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+    "fastmcp>=3.0",
+]
+
+[project.scripts]
+claude-to-agy = "claude_to_agy.bridge:main"
+claude-agy-hook = "claude_to_agy.hooks.block_direct_commands:main"
+
+[project.urls]
+Homepage = "https://github.com/rauls-kjarners/claude-to-agy"
+Repository = "https://github.com/rauls-kjarners/claude-to-agy"
+Issues = "https://github.com/rauls-kjarners/claude-to-agy/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claude_to_agy"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "pyright",
+    "pytest-cov",
+    "pre-commit",
+    "nox",
+]
+
+[tool.ruff.lint]
+select = [
+    "A",   # flake8-builtins (prevents shadowing built-ins like 'id', 'dict')
+    "ARG", # flake8-unused-arguments (catches unused function arguments)
+    "B",   # flake8-bugbear (finds common bugs and design flaws)
+    "C4",  # flake8-comprehensions (optimizes and modernizes comprehensions)
+    "E",   # pycodestyle (standard PEP8 formatting errors)
+    "ERA", # eradicate (detects commented-out dead code)
+    "F",   # Pyflakes (standard errors, unused variables/imports)
+    "I",   # isort (automatically sort imports)
+    "N",   # pep8-naming (enforce standard PEP8 naming conventions)
+    "PT",  # flake8-pytest-style (added per plan)
+    "PTH", # flake8-use-pathlib (encourages modern pathlib over os.path)
+    "RET", # flake8-return (enforces clean return statements)
+    "RUF", # Ruff-specific rules (catches many modern edge cases)
+    "SIM", # flake8-simplify (simplifies complex code structures)
+    "TC",  # flake8-type-checking (moves type-only imports to TYPE_CHECKING blocks)
+    "UP",  # pyupgrade (automatically upgrade legacy syntax to modern Python)
+    "W",   # pycodestyle (warnings)
+]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--cov=claude_to_agy --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=95 --strict-markers --strict-config"
+
+[tool.coverage.run]
+omit = ["src/claude_to_agy/hooks/block_direct_commands.py"]

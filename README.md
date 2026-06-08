@@ -1,10 +1,14 @@
 # claude-to-agy
 
+[![CI](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/rauls-kjarners/claude-to-agy/graph/badge.svg?token=QWY0HFQATX)](https://codecov.io/github/rauls-kjarners/claude-to-agy)
+
 A lightweight MCP bridge that lets Claude Code delegate heavy tasks to the Antigravity CLI (agy) - saving context window and **tokens** for what matters.
 
 ## What It Does
 
 Registers a `delegate_to_agy` MCP tool that Claude automatically uses when it encounters:
+
 - **Large files** (>200 lines) - logs, dumps, generated code
 - **Multi-file analysis** (>3 files at once)
 - **Deep searches** - `git log`, `git diff`, `grep`
@@ -15,7 +19,7 @@ Claude sends a prompt + file paths → the bridge runs `agy` CLI → returns the
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.10+
 - [`agy` CLI](https://antigravity.google/docs/cli-getting-started) installed and authenticated
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
@@ -25,13 +29,17 @@ Claude sends a prompt + file paths → the bridge runs `agy` CLI → returns the
 # 1. Clone anywhere on your machine
 git clone https://github.com/rauls-kjarners/claude-to-agy.git ~/.claude-to-agy
 
-# 2. Register the MCP server (global - works in any project)
-claude mcp add -s user claude-to-agy python3 ~/.claude-to-agy/src/bridge.py
+# 2. Install dependencies via uv
+cd ~/.claude-to-agy
+uv sync
 
-# 3. Copy the rules file into any project where you want delegation
+# 3. Register the MCP server (global - works in any project)
+claude mcp add -s user claude-to-agy uv run --directory ~/.claude-to-agy claude-to-agy
+
+# 4. Copy the rules file into any project where you want delegation
 cp ~/.claude-to-agy/CLAUDE.md /path/to/your/project/CLAUDE.md
 
-# 4. (Optional) Add the PreToolUse hook to enforce delegation for subagents
+# 5. (Optional) Add the PreToolUse hook to enforce delegation for subagents
 ```
 
 Then merge the following into your `~/.claude/settings.json` (or per-project `.claude/settings.json`):
@@ -45,7 +53,7 @@ Then merge the following into your `~/.claude/settings.json` (or per-project `.c
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude-to-agy/src/hooks/block-direct-commands.py",
+            "command": "claude-agy-hook",
             "onError": "block"
           }
         ]
@@ -61,7 +69,7 @@ That's it. Claude will now automatically delegate heavy tasks to Antigravity CLI
 
 ### Why the Hook Matters
 
-`CLAUDE.md` rules only apply to the **main** Claude agent. Subagents (spawned via `run_subagent` or similar) **do not** read `CLAUDE.md` and will run `grep -r`, `git diff`, etc. directly — wasting tokens and defeating the purpose of delegation.
+`CLAUDE.md` rules only apply to the **main** Claude agent. Subagents (spawned via `run_subagent` or similar) **do not** read `CLAUDE.md` and will run `grep -r`, `git diff`, etc. directly - wasting tokens and defeating the purpose of delegation.
 
 The PreToolUse hook runs at the Claude Code platform level for **all** agents (main + sub), mechanically blocking banned commands before they execute.
 
@@ -79,31 +87,41 @@ claude skill add ~/.claude-to-agy/SKILL.md
 
 All settings are optional environment variables:
 
-| Variable | Default | Description |
-|---|---|---|
-| `AGY_CONNECT_TIMEOUT` | `60` | Seconds to start the agy process |
-| `AGY_TOTAL_TIMEOUT` | `600` | Hard timeout for entire execution |
-
+| Variable              | Default | Description                       |
+| --------------------- | ------- | --------------------------------- |
+| `AGY_CONNECT_TIMEOUT` | `60`    | Seconds to start the agy process  |
+| `AGY_TOTAL_TIMEOUT`   | `1200`  | Hard timeout for entire execution |
 
 ## How It Works
 
 ```
-User → Claude Code → MCP bridge (bridge.py) → agy CLI → Gemini API
-                   ←                        ←         ←
+User → Claude Code → MCP bridge (FastMCP) → agy CLI → Gemini API
+                   ←                      ←         ←
 ```
 
 1. `CLAUDE.md` instructs Claude when to delegate
 2. Claude calls `delegate_to_agy(prompt, cwd, files?)` via MCP
 3. `bridge.py` prepends file paths to the prompt
 4. Runs `agy --dangerously-skip-permissions --add-dir <cwd> -p "<prompt>"`
-5. Returns `{"success": true, "response": "..."}` or `{"success": false, "error": "..."}` back to Claude
+5. Returns the text output cleanly or raises an exception natively handled by [FastMCP](https://github.com/jlowin/fastmcp)
 
 ## Development
 
 ```bash
-python -m pytest tests/ -v
+# Linting & Formatting
+uv run ruff check .
+uv run ruff format .
+
+# Type Checking
+uv run pyright
+
+# Tests
+uv run pytest
+
+# Pre-commit Hooks (Run before committing)
+uv run pre-commit install
 ```
 
 ## License
 
-Apache 2.0
+MIT
