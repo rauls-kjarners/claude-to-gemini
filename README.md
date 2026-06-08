@@ -26,20 +26,13 @@ Claude sends a prompt + file paths → the bridge runs `agy` CLI → returns the
 ## Installation
 
 ```bash
-# 1. Clone anywhere on your machine
-git clone https://github.com/rauls-kjarners/claude-to-agy.git ~/.claude-to-agy
+# 1. Register the MCP server globally via uvx
+claude mcp add -s user claude-to-agy uvx claude-to-agy
 
-# 2. Install dependencies via uv
-cd ~/.claude-to-agy
-uv sync
+# 2. Download the delegation rules into your current project
+curl -o CLAUDE.md https://raw.githubusercontent.com/rauls-kjarners/claude-to-agy/main/CLAUDE.md
 
-# 3. Register the MCP server (global - works in any project)
-claude mcp add -s user claude-to-agy uv run --directory ~/.claude-to-agy claude-to-agy
-
-# 4. Copy the rules file into any project where you want delegation
-cp ~/.claude-to-agy/CLAUDE.md /path/to/your/project/CLAUDE.md
-
-# 5. (Optional) Add the PreToolUse hook to enforce delegation for subagents
+# 3. (Optional) Add the PreToolUse hook to enforce delegation for subagents
 ```
 
 Then merge the following into your `~/.claude/settings.json` (or per-project `.claude/settings.json`):
@@ -78,10 +71,10 @@ The PreToolUse hook runs at the Claude Code platform level for **all** agents (m
 This project also includes a `SKILL.md` file, which is the standard format for reusable Claude Code skills. If your setup supports skills, you can use it instead of manually copying `CLAUDE.md`:
 
 ```bash
-claude skill add ~/.claude-to-agy/SKILL.md
+claude skill add https://raw.githubusercontent.com/rauls-kjarners/claude-to-agy/main/SKILL.md
 ```
 
-> **Note:** You still need the MCP server registered (step 2 above). The skill provides the rules, MCP provides the tool.
+> **Note:** You still need the MCP server registered (step 1 above). The skill provides the rules, MCP provides the tool.
 
 ## Configuration
 
