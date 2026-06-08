@@ -42,41 +42,23 @@ You should automatically use this tool whenever you encounter:
 - Optionally pass relevant file paths in the `files` array.
 - Await the text response and use the summary/data provided by agy to fulfill the user's request.
 
-## Configuration
+## STOP & VERIFY
 
-The bridge supports environment variables for tuning:
+**You are violating these rules if**:
 
-- `AGY_CONNECT_TIMEOUT` - subprocess start timeout in seconds (default: `60`)
-- `AGY_TOTAL_TIMEOUT` - total execution timeout in seconds (default: `600`)
+- You delegated a file you were about to **edit** and are now working from agy's summary. Operate-on stays in your context.
+- You ran an **unbounded** `grep` / `git diff` / `git log` in-terminal instead of delegating. (Bounded ones like `-n 5` or `--stat` are fine).
+- You read or held a large file in context to **audit or review** it instead of delegating.
+- You answered a consume trigger from memory instead of verifying — code changes.
 
-## Setup Instructions (for users)
+## Rationalization Table
 
-If the tool is not already active in your Claude Code environment, run the following command to register it:
-
-```bash
-cd ~/.claude-to-agy && uv sync
-claude mcp add -s user claude-to-agy ~/.claude-to-agy/.venv/bin/python ~/.claude-to-agy/src/claude_to_agy/bridge.py
-```
-
-## Subagent Enforcement (Hooks)
-
-Subagents do **not** read skill/CLAUDE.md rules and will run `grep`, `git diff`, etc. directly. Add the following PreToolUse hook to `~/.claude/settings.json` to block banned commands for **all** agents:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "claude-agy-hook",
-            "onError": "block"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+| Excuse | Reality |
+| ------ | ------- |
+| "I already know this code." | Code changes. If you're verifying, delegate and check. |
+| "The file is probably small." | If you're consuming and unsure, delegate — don't guess. |
+| "I can answer this directly." | If it's a consume trigger and you're not editing, delegate. Your memory goes stale. |
+| "It's faster if I just read it." | For consume work, context-budget conservation outranks speed. |
+| "I only need a small part of the file." | _Consuming_ → delegate the whole file, let agy extract. _Editing_ → read it locally; you need the source. |
+| "I'll just delegate this file I'm about to edit." | You'll edit from a summary, half-blind, and miss what it dropped. Operate-on stays local. |
+| "I'll delegate the review, then read the file to make the change." | If the review leads straight to an edit, read it once locally. Don't fetch it twice. |
