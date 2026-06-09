@@ -1,6 +1,6 @@
 [project]
 name = "claude-to-agy"
-version = "1.0.0"
+version = "1.1.0"
 description = "Claude-to-Antigravity MCP Bridge."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,7 +42,6 @@ dependencies = [
 
 [project.scripts]
 claude-to-agy = "claude_to_agy.bridge:main"
-claude-agy-hook = "claude_to_agy.hooks.block_direct_commands:main"
 
 [project.urls]
 Homepage = "https://github.com/rauls-kjarners/claude-to-agy"
@@ -99,6 +98,3 @@ asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 addopts = "--cov=claude_to_agy --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=95 --strict-markers --strict-config"
-
-[tool.coverage.run]
-omit = ["src/claude_to_agy/hooks/block_direct_commands.py"]
