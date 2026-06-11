@@ -1,6 +1,6 @@
 [project]
 name = "claude-to-agy"
-version = "1.1.0"
+version = "1.1.1"
 description = "Claude-to-Antigravity MCP Bridge."
 readme = "README.md"
 requires-python = ">=3.10"

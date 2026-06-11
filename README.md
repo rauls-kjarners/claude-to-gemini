@@ -1,7 +1,12 @@
 # claude-to-agy
 
 [![CI](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/github/rauls-kjarners/claude-to-agy/graph/badge.svg?token=QWY0HFQATX)](https://codecov.io/github/rauls-kjarners/claude-to-agy)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/claude-to-agy)
+![GitHub Release](https://img.shields.io/github/v/release/rauls-kjarners/claude-to-agy)
+[![PyPI version](https://badge.fury.io/py/claude-to-agy.svg)](https://badge.fury.io/py/claude-to-agy)
+![Static Badge](https://img.shields.io/badge/OS-Linux%20MacOS%20Windows-orange)
 
 A lightweight MCP bridge that lets Claude Code delegate heavy tasks to the Antigravity CLI (agy) - saving context window and **tokens** for what matters.
 
@@ -24,6 +29,8 @@ Claude sends a prompt + file paths → the bridge runs `agy` CLI → returns the
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 
 ## Installation
+
+> **Note:** The command below uses [`uvx`](https://docs.astral.sh/uv/guides/scripts/#running-tools) to run the server without manual installation. If you don't have `uv` installed, you can substitute `uvx` with `npx -y` or `pipx run`.
 
 ```bash
 # 1. Register the MCP server globally via uvx
