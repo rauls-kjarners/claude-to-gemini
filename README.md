@@ -3,8 +3,6 @@
 [![CI](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/github/rauls-kjarners/claude-to-agy/graph/badge.svg?token=QWY0HFQATX)](https://codecov.io/github/rauls-kjarners/claude-to-agy)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/claude-to-agy)
-![GitHub Release](https://img.shields.io/github/v/release/rauls-kjarners/claude-to-agy)
 [![PyPI version](https://badge.fury.io/py/claude-to-agy.svg)](https://badge.fury.io/py/claude-to-agy)
 ![Static Badge](https://img.shields.io/badge/OS-Linux%20MacOS%20Windows-orange)
 
