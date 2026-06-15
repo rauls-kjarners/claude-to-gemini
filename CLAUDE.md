@@ -9,6 +9,7 @@ Before any read, search, or analysis, pick the mode:
 - **Operate-on** - code you're about to edit. Read the file and edit it yourself - even if it's over 200 lines; don't delegate it. Never edit from a summary.
 - **Consume-and-discard** - you want a verdict, not the bytes (audits, searches, reviews, git history, external research). Delegate to agy.
 - **Unsure which mode?** If you don't yet know whether you'll edit, treat it as consume and delegate. Only keep it local once you've committed to editing it.
+- **Discovery is always consume.** "Find all X across module Y", "which files use pattern Z", "where are the assert() calls" - these are grep/multi-file analysis even if editing immediately follows. Delegate to agy to get the file list, then read only the specific files you'll edit. The fact that editing comes next does NOT make the discovery step operate-on.
 
 If a review leads straight into editing the same file, read it locally once - don't delegate then re-read it.
 
@@ -43,14 +44,16 @@ If you are unsure whether a file exceeds 200 lines, delegate it anyway - Antigra
 
 ## Rationalization Table
 
-| Excuse                                                            | Reality                                                                                               |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| "I already know this / can answer from memory."                   | Code changes and memory goes stale. If you're verifying or consuming, delegate.                       |
-| "The file is probably small."                                     | If you're consuming and unsure, delegate - don't guess.                                               |
-| "It's faster if I just read it."                                  | For consume work, context-budget conservation outranks speed.                                         |
-| "I only need a small part of the file."                           | _Consuming_ → delegate the whole file, let agy extract. _Editing_ → just read the file and edit it.   |
-| "I'll just delegate this file I'm about to edit."                 | It's operate-on: read the file and edit it yourself. Never edit from a summary.                       |
-| "I just ran a bounded git command, so this next one is fine too." | _Independent bounds_ → a prior bounded command doesn't make an unbounded one safe. Re-check per call. |
+| Excuse                                                                              | Reality                                                                                                                                                                                                        |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "I already know this / can answer from memory."                                     | Code changes and memory goes stale. If you're verifying or consuming, delegate.                                                                                                                                |
+| "The file is probably small."                                                       | If you're consuming and unsure, delegate - don't guess.                                                                                                                                                        |
+| "It's faster if I just read it."                                                    | For consume work, context-budget conservation outranks speed.                                                                                                                                                  |
+| "I only need a small part of the file."                                             | _Consuming_ → delegate the whole file, let agy extract. _Editing_ → just read the file and edit it.                                                                                                            |
+| "I'll just delegate this file I'm about to edit."                                   | It's operate-on: read the file and edit it yourself. Never edit from a summary.                                                                                                                                |
+| "I'll delegate the review, then read the file to make the change."                  | If the review leads straight to an edit, read it once locally. Don't fetch it twice.                                                                                                                           |
+| "I just ran a bounded git command, so this next one is fine too."              | _Independent bounds_ → a prior bounded command doesn't make an unbounded one safe. Re-check per call.                                                                                                          |
+| "I'm going to edit these files anyway, so finding them first counts as operate-on." | Discovery and editing are separate steps. Finding which files/lines match a pattern is grep → always delegate to agy. Operate-on only begins once you know the specific file and have committed to editing it. |
 
 ## How to Delegate
 
