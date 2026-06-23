@@ -4,7 +4,7 @@
 [![CodeQL](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml/badge.svg)](https://github.com/rauls-kjarners/claude-to-agy/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/github/rauls-kjarners/claude-to-agy/graph/badge.svg?token=QWY0HFQATX)](https://codecov.io/github/rauls-kjarners/claude-to-agy)
 [![PyPI version](https://badge.fury.io/py/claude-to-agy.svg)](https://badge.fury.io/py/claude-to-agy)
-![Static Badge](https://img.shields.io/badge/OS-Linux%20MacOS%20Windows-orange)
+![Static Badge](https://img.shields.io/badge/OS-Windows-blue)
 
 A lightweight MCP bridge that lets Claude Code delegate heavy tasks to the Antigravity CLI (agy) - saving context window and **tokens** for what matters.
 
@@ -22,6 +22,7 @@ Claude sends a prompt + file paths → the bridge runs `agy` CLI → returns the
 
 ## Requirements
 
+- Windows (agy is spawned in a Windows PTY via `pywinpty`)
 - Python 3.10+
 - [`agy` CLI](https://antigravity.google/docs/cli-getting-started) installed and authenticated
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
@@ -56,10 +57,9 @@ claude skill add https://raw.githubusercontent.com/rauls-kjarners/claude-to-agy/
 
 All settings are optional environment variables:
 
-| Variable              | Default | Description                       |
-| --------------------- | ------- | --------------------------------- |
-| `AGY_CONNECT_TIMEOUT` | `60`    | Seconds to start the agy process  |
-| `AGY_TOTAL_TIMEOUT`   | `1200`  | Hard timeout for entire execution |
+| Variable            | Default | Description                                                  |
+| ------------------- | ------- | ------------------------------------------------------------ |
+| `AGY_TOTAL_TIMEOUT` | `1200`  | Hard timeout (s); also passed to agy as `--print-timeout`    |
 
 ## How It Works
 
@@ -71,8 +71,8 @@ User → Claude Code → MCP bridge (FastMCP) → agy CLI → Gemini API
 1. `CLAUDE.md` instructs Claude when to delegate
 2. Claude calls `delegate_to_agy(prompt, cwd, files?)` via MCP
 3. `bridge.py` prepends file paths to the prompt
-4. Runs `agy --dangerously-skip-permissions --add-dir <cwd> -p "<prompt>"`
-5. Returns the text output cleanly or raises an exception natively handled by [FastMCP](https://github.com/jlowin/fastmcp)
+4. Spawns `agy --dangerously-skip-permissions --add-dir <cwd> --print-timeout <t>s -p "<prompt>"` inside a Windows PTY (agy emits nothing to a plain pipe — it gates output on `isatty()`)
+5. Strips the PTY's VT/ANSI noise and returns clean text, or raises an exception natively handled by [FastMCP](https://github.com/jlowin/fastmcp)
 
 ## Development
 

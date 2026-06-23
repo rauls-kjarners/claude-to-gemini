@@ -27,7 +27,7 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -38,6 +38,7 @@ classifiers = [
 ]
 dependencies = [
     "fastmcp>=3.0",
+    "pywinpty>=2.0; sys_platform == 'win32'",
 ]
 
 [project.scripts]
