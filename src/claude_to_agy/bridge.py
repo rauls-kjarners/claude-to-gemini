@@ -22,6 +22,53 @@ else:  # pragma: no cover - bridge only runs on Windows
 
 TOTAL_TIMEOUT = int(os.environ.get("AGY_TOTAL_TIMEOUT", "1200"))
 
+# Security guard: agy runs with --dangerously-skip-permissions, which reads/writes/
+# executes in cwd without confirming. Refuse that inside sensitive repos named in
+# AGY_DENY_CWD (os.pathsep-separated absolute paths; empty default = disabled opt-in).
+# normcase+casefold defeats case tricks on case-insensitive filesystems; realpath
+# collapses "..", symlinks and trailing seps; _strip_win_prefix removes the Windows
+# device-namespace prefix realpath would otherwise let bypass the match. os.sep
+# boundary so a sibling like "repo-x" is not treated as a child of "repo".
+
+
+def _parse_deny_cwd(raw: str) -> tuple[str, ...]:
+    """Split AGY_DENY_CWD into entries, dropping blank/whitespace-only ones."""
+    return tuple(p for p in (e.strip() for e in raw.split(os.pathsep)) if p)
+
+
+_DENY_CWD = _parse_deny_cwd(os.environ.get("AGY_DENY_CWD", ""))
+
+
+def _strip_win_prefix(p: str) -> str:
+    """Drop Windows extended-length / device-namespace prefixes realpath keeps."""
+    if p.startswith("\\\\?\\UNC\\"):
+        return "\\\\" + p.removeprefix("\\\\?\\UNC\\")
+    if p.startswith("\\\\?\\"):
+        return p.removeprefix("\\\\?\\")
+    return p
+
+
+def _canon(p: str) -> str:
+    # realpath can re-add the \\?\ prefix for long paths, so strip before and after.
+    resolved = _strip_win_prefix(os.path.realpath(_strip_win_prefix(p)))
+    return os.path.normcase(resolved).casefold()
+
+
+def _guard_cwd(cwd: str) -> None:
+    # ponytail: prefix guard on the initial cwd only. A TOCTOU junction swap, or running
+    # agy from an allowed *parent* of a denied repo, is out of scope -- this stops
+    # accidental direct invocation in a sensitive repo, not a determined local attacker.
+    real = _canon(cwd)
+    for deny in _DENY_CWD:
+        d = _canon(deny)
+        # rstrip so a drive-root ("C:\\") boundary doesn't double its separator.
+        if real == d or real.startswith(d.rstrip(os.sep) + os.sep):
+            raise PermissionError(
+                "claude-to-agy refuses --dangerously-skip-permissions "
+                f"in sensitive repo: {real}"
+            )
+
+
 mcp = FastMCP("claude-to-agy")
 
 _executor = ThreadPoolExecutor(max_workers=4)
@@ -54,11 +101,13 @@ def _run_pty(cmd: list[str], cwd: str, total_timeout: int) -> str:
     give it a real Windows console. We read until the process dies (or a watchdog
     kills it on timeout), then strip the VT noise the PTY adds.
     """
-    if PtyProcess is None:  # pragma: no cover - non-Windows guard
+    if sys.platform != "win32":  # pragma: no cover - bridge only runs on Windows
         raise RuntimeError("claude-to-agy requires Windows (pywinpty unavailable).")
     try:
         # ponytail: 220 cols wide so agy's output isn't hard-wrapped mid-line
-        proc = PtyProcess.spawn(cmd, cwd=cwd, dimensions=(50, 220))
+        proc = PtyProcess.spawn(  # pyright: ignore[reportUnknownMemberType]
+            cmd, cwd=cwd, dimensions=(50, 220)
+        )
     except OSError as error:
         raise RuntimeError(f"Failed to start agy: {error}") from error
 
@@ -104,6 +153,7 @@ async def delegate_to_agy(prompt: str, cwd: str, files: list[str] | None = None)
         cwd: The working directory of the project (absolute path).
         files: Optional list of absolute file paths to include as context.
     """
+    _guard_cwd(cwd)
     full_prompt = build_files_context(files) + prompt
     cmd = [
         "agy",

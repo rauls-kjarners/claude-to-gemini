@@ -60,6 +60,9 @@ All settings are optional environment variables:
 | Variable            | Default | Description                                                  |
 | ------------------- | ------- | ------------------------------------------------------------ |
 | `AGY_TOTAL_TIMEOUT` | `1200`  | Hard timeout (s); also passed to agy as `--print-timeout`    |
+| `AGY_DENY_CWD`      | _(empty)_ | `os.pathsep`-separated **absolute** paths. The bridge refuses to run agy in any of these directories (or a subdirectory). Empty = disabled. |
+
+> **Security — the guard is opt-in.** agy is spawned with `--dangerously-skip-permissions`, so it can read/write/execute in the task `cwd` without confirming. Set `AGY_DENY_CWD` to your sensitive repos in the registration (`claude mcp add ... -e AGY_DENY_CWD="C:\path\to\repo"`) and the bridge refuses those directories. It is **off by default** so the bridge stays drop-in; enable it per machine.
 
 ## How It Works
 
